@@ -144,6 +144,7 @@ jobs:
         echo "📥 固件下载" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
         
+   
     - name: 发布至release
       uses: softprops/action-gh-release@v1
       if: steps.tag.outputs.status == 'success' && !cancelled()
@@ -154,3 +155,10 @@ jobs:
         name: ${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}-${{ env.DEVICE_NAME }}
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
+
+    - name: 微信推送
+      if: steps.tag.outputs.status == 'success' && !cancelled()
+      run: |
+        curl -X POST https://sctapi.ftqq.com/SCT224822Tawiv55J4dDegkQOBODRkpoH1.send \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "title=红米AX6000 OpenWrt固件已编译完成&desp=红米AX6000 OpenWrt固件已编译完成，查看：https://github.com/gyssi007/RM_AX6000-LED_OpenWrt/releases"
