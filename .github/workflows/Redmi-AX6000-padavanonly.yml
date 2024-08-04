@@ -56,10 +56,13 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
-    - name: 安装/升级 Golang 最新版
+    - name: 删除旧版 Go
+      run: |
+        sudo rm -rf /usr/local/go
+
+    - name: 安装/升级 Golang 1.22.5
       run: |
         wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
-        sudo rm -rf /usr/local/go
         sudo tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
         echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
         source $HOME/.profile
@@ -153,7 +156,6 @@ jobs:
         echo "📥 固件下载" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
         
-   
     - name: 发布至release
       uses: softprops/action-gh-release@v1
       if: steps.tag.outputs.status == 'success' && !cancelled()
