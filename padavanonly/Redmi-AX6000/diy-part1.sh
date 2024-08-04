@@ -16,4 +16,6 @@
 # Add a feed source
 #echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
 #echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
-echo 'src-git messense https://github.com/messense/aliyundrive-webdav' >>feeds.conf.default
+echo 'src-git sirpdboy https://github.com/sirpdboy/luci-app-ddns-go.git
+echo 'src-git alistorg https://github.com/alist-org/alist.git
+echo 'src-git ximiTech https://github.com/ximiTech/luci-app-msd_lite.git
