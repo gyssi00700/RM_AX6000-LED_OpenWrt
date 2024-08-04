@@ -1,13 +1,3 @@
-#
-# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
-# https://github.com/P3TERX/Actions-OpenWrt
-# Description: Build OpenWrt using GitHub Actions
-#
-###############改名字##############
 name: Redmi-AX6000-padavanonly
 
 on:
@@ -18,8 +8,6 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
-#  schedule:
-#    - cron: 0 16 * * *
 
 env:
   REPO_URL: https://github.com/padavanonly/immortalwrtARM
@@ -32,7 +20,6 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
-  ###############改名字##############
   OPENWRT_NAME: padavanonly
 
 jobs:
@@ -56,16 +43,13 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
-    - name: 删除旧版 Go
-      run: |
-        sudo rm -rf /usr/local/go
-
     - name: 安装/升级 Golang 1.22.5
       run: |
         wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
+        sudo rm -rf /usr/local/go
         sudo tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
-        echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
-        source $HOME/.profile
+        echo "export PATH=/usr/local/go/bin:$PATH" >> $GITHUB_ENV
+        source $GITHUB_ENV
         go version
         
     - name: 下载固件源码
