@@ -42,14 +42,13 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-
-    - name: 安装/升级 Golang 1.22.5
-      run: |
-        wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
-        sudo rm -rf /usr/local/go
-        sudo tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
-        echo "export PATH=/usr/local/go/bin:$PATH" >> $GITHUB_ENV
-        source $GITHUB_ENV
+        
+        # 添加更新/安装Go的命令
+        sudo add-apt-repository ppa:longsleep/golang-backports -y
+        sudo apt-get update
+        sudo apt-get install golang-go -y
+        
+        # 验证Go安装
         go version
         
     - name: 下载固件源码
