@@ -71,6 +71,13 @@ jobs:
         cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a
+
+    - name: 检查 alist 包
+      run: |
+        cd openwrt
+        echo "检查 alist 包的情况:"
+        find . -name "alist"
+        find . -name "go.mod"
       
     - name: 加载config & DIY_P2_SH
       run: |
@@ -81,7 +88,18 @@ jobs:
         
     - name: 修复 go.mod 中的 Go 版本
       run: |
-        sed -i 's/go 1.22.4/go 1.23/' openwrt/build_dir/target-aarch64_cortex-a53_musl/alist-3.36.0/go.mod
+        GO_MOD_FILE="openwrt/build_dir/target-aarch64_cortex-a53_musl/alist-3.36.0/go.mod"
+        echo "检查 go.mod 文件: $GO_MOD_FILE"
+        if [ -f "$GO_MOD_FILE" ]; then
+          echo "go.mod 文件存在，进行修复"
+          sed -i 's/go 1.22.4/go 1.23/' "$GO_MOD_FILE"
+          echo "修复后的 go.mod 内容:"
+          cat "$GO_MOD_FILE"
+        else
+          echo "警告: go.mod 文件不存在于 $GO_MOD_FILE"
+          echo "当前目录结构:"
+          ls -R openwrt/build_dir
+        fi
         
     - name: SSH链接管理
       uses: P3TERX/ssh2actions@v1.0.0
@@ -98,13 +116,22 @@ jobs:
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+
+    - name: 检查目录结构
+      run: |
+        echo "当前工作目录:"
+        pwd
+        echo "OpenWrt 目录结构:"
+        ls -R openwrt
         
     - name: 编译固件
       id: compile
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 || make -j1 V=s
+        make -j$(nproc) V=s || make -j1 V=s
+        echo "编译完成，检查输出目录"
+        ls -R bin/targets
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=$(cat DEVICE_NAME)" >> $GITHUB_ENV
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*TARGET_.*_(.*)_DEVICE_.*=y/\1/' > TARGET_NAME
@@ -119,13 +146,31 @@ jobs:
     - name: 整理文件并重命名
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
-      run: | 
-        cd openwrt/bin/targets/*/*
-        rm -rf packages
-        sudo -E apt-get -qq install rename
-        rename 's/.*${{ env.TARGET_NAME }}/${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}/' *
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
+      run: |
+        echo "当前工作目录:"
+        pwd
+        echo "查找 target 目录:"
+        find openwrt/bin -name "targets" -type d
+        TARGET_DIR=$(find openwrt/bin -name "targets" -type d)
+        if [ -n "$TARGET_DIR" ]; then
+          cd "$TARGET_DIR"
+          echo "进入目标目录: $PWD"
+          ls -la
+          if [ -d * ]; then
+            cd *
+            rm -rf packages
+            sudo -E apt-get -qq install rename
+            rename 's/.*/-padavanonly/' *
+            echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "目标目录为空"
+            echo "status=empty" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "未找到 target 目录"
+          echo "status=notfound" >> $GITHUB_OUTPUT
+        fi
       
     - name: 上传固件到github
       uses: actions/upload-artifact@main
