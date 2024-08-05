@@ -72,13 +72,16 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a
       
-    
     - name: 加载config & DIY_P2_SH
       run: |
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
+        
+    - name: 修复 go.mod 中的 Go 版本
+      run: |
+        sed -i 's/go 1.22.4/go 1.23/' openwrt/build_dir/target-aarch64_cortex-a53_musl/alist-3.36.0/go.mod
         
     - name: SSH链接管理
       uses: P3TERX/ssh2actions@v1.0.0
