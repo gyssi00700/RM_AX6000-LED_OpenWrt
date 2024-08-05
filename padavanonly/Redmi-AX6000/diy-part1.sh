@@ -16,6 +16,6 @@
 # Add a feed source
 #echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
 #echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
-echo 'src-git gyssi007 https://github.com/gyssi007/new-luci-app-msd_lite.git' >> feeds.conf.default
-echo 'src-git sbwml https://github.com/sbwml/luci-app-alist.git' >> feeds.conf.default
-echo 'src-git jeessy2 https://github.com/jeessy2/ddns-go.git' >> feeds.conf.default
+echo 'src-git sirpdboy https://github.com/sirpdboy/luci-app-ddns-go.git' >> feeds.conf.default
+echo 'src-git alistorg https://github.com/alist-org/alist.git' >> feeds.conf.default
+echo 'src-git ximiTech https://github.com/ximiTech/luci-app-msd_lite.git' >> feeds.conf.default
