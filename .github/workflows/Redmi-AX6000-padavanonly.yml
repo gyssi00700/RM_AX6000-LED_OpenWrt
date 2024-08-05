@@ -57,13 +57,7 @@ jobs:
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
-        
-    - name: 更新 & 安装 feeds
-      run: |
-        cd openwrt
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
-      
+
     - name: 替换 Golang 包
       run: |
         cd openwrt
@@ -71,7 +65,14 @@ jobs:
         git clone https://github.com/sbwml/packages_lang_golang -b 20.x feeds/packages/lang/golang
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-
+   
+    - name: 更新 & 安装 feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+      
+    
     - name: 加载config & DIY_P2_SH
       run: |
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
