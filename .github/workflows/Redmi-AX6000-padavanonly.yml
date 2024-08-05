@@ -42,6 +42,7 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
+        sudo apt-get install libfuse-dev -y
         
         # 添加更新/安装Go的命令
         sudo add-apt-repository ppa:longsleep/golang-backports -y
