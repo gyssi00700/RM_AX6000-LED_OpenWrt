@@ -18,4 +18,4 @@
 #echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
 echo 'src-git sirpdboy https://github.com/sirpdboy/luci-app-ddns-go.git' >> feeds.conf.default
 echo 'src-git alistorg https://github.com/alist-org/alist.git' >> feeds.conf.default
-echo 'src-git ximiTech https://github.com/ximiTech/luci-app-msd_lite.git' >> feeds.conf.default
+echo 'src-git jack9189181 https://github.com/jack9189181/MSD_Lite.git' >> feeds.conf.default
