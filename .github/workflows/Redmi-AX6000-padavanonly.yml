@@ -1,3 +1,13 @@
+#
+# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+# https://github.com/P3TERX/Actions-OpenWrt
+# Description: Build OpenWrt using GitHub Actions
+#
+###############改名字##############
 name: Redmi-AX6000-padavanonly
 
 on:
@@ -8,9 +18,11 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
+#  schedule:
+#    - cron: 0 16 * * *
 
 env:
-  REPO_URL: https://github.com/padavanonly/immortalwrtARM
+  REPO_URL: https://github.com/lgs2007m/immortalwrtARM
   REPO_BRANCH: mt7986
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: padavanonly/Redmi-AX6000/.config
@@ -20,6 +32,7 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
+  ###############改名字##############
   OPENWRT_NAME: padavanonly
 
 jobs:
@@ -36,14 +49,22 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update
-        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2204)
+        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
         sudo apt-get install libfuse-dev -y
-    
+
+    - name: 安装 Go 1.22.5
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22.5'
+
+    - name: 验证 Go 版本
+      run: go version
+        
     - name: 下载固件源码
       working-directory: /workdir
       run: |
@@ -57,27 +78,12 @@ jobs:
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
-
-    - name: 替换 Golang 包
-      run: |
-        cd openwrt
-        rm -rf feeds/packages/lang/golang
-        git clone https://github.com/sbwml/packages_lang_golang -b 20.x feeds/packages/lang/golang
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
-   
+        
     - name: 更新 & 安装 feeds
       run: |
         cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-
-    - name: 检查 alist 包
-      run: |
-        cd openwrt
-        echo "检查 alist 包的情况:"
-        find . -name "alist"
-        find . -name "go.mod"
       
     - name: 加载config & DIY_P2_SH
       run: |
@@ -85,8 +91,6 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-        
-    
         
     - name: SSH链接管理
       uses: P3TERX/ssh2actions@v1.0.0
@@ -103,22 +107,13 @@ jobs:
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
-    - name: 检查目录结构
-      run: |
-        echo "当前工作目录:"
-        pwd
-        echo "OpenWrt 目录结构:"
-        ls -R openwrt
         
     - name: 编译固件
       id: compile
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) V=s || make -j1 V=s
-        echo "编译完成，检查输出目录"
-        ls -R bin/targets
+        make -j$(nproc) || make -j1 || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=$(cat DEVICE_NAME)" >> $GITHUB_ENV
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*TARGET_.*_(.*)_DEVICE_.*=y/\1/' > TARGET_NAME
@@ -133,31 +128,13 @@ jobs:
     - name: 整理文件并重命名
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
-      run: |
-        echo "当前工作目录:"
-        pwd
-        echo "查找 target 目录:"
-        find openwrt/bin -name "targets" -type d
-        TARGET_DIR=$(find openwrt/bin -name "targets" -type d)
-        if [ -n "$TARGET_DIR" ]; then
-          cd "$TARGET_DIR"
-          echo "进入目标目录: $PWD"
-          ls -la
-          if [ -d * ]; then
-            cd *
-            rm -rf packages
-            sudo -E apt-get -qq install rename
-            rename 's/.*/-padavanonly/' *
-            echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "目标目录为空"
-            echo "status=empty" >> $GITHUB_OUTPUT
-          fi
-        else
-          echo "未找到 target 目录"
-          echo "status=notfound" >> $GITHUB_OUTPUT
-        fi
+      run: | 
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+        sudo -E apt-get -qq install rename
+        rename 's/.*${{ env.TARGET_NAME }}/${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}/' *
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "status=success" >> $GITHUB_OUTPUT
       
     - name: 上传固件到github
       uses: actions/upload-artifact@main
@@ -186,10 +163,3 @@ jobs:
         name: ${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}-${{ env.DEVICE_NAME }}
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-
-    - name: 微信推送
-      if: steps.tag.outputs.status == 'success' && !cancelled()
-      run: |
-        curl -X POST https://sctapi.ftqq.com/SCT224822Tawiv55J4dDegkQOBODRkpoH1.send \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "title=红米AX6000 OpenWrt固件已编译完成&desp=红米AX6000 OpenWrt固件已编译完成，查看：https://github.com/gyssi007/RM_AX6000-LED_OpenWrt/releases"
