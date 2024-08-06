@@ -86,20 +86,7 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
         
-    - name: 修复 go.mod 中的 Go 版本
-      run: |
-        GO_MOD_FILE="openwrt/build_dir/target-aarch64_cortex-a53_musl/alist-3.36.0/go.mod"
-        echo "检查 go.mod 文件: $GO_MOD_FILE"
-        if [ -f "$GO_MOD_FILE" ]; then
-          echo "go.mod 文件存在，进行修复"
-          sed -i 's/go 1.22.4/go 1.23/' "$GO_MOD_FILE"
-          echo "修复后的 go.mod 内容:"
-          cat "$GO_MOD_FILE"
-        else
-          echo "警告: go.mod 文件不存在于 $GO_MOD_FILE"
-          echo "当前目录结构:"
-          ls -R openwrt/build_dir
-        fi
+    
         
     - name: SSH链接管理
       uses: P3TERX/ssh2actions@v1.0.0
