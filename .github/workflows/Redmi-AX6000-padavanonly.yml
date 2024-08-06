@@ -1,13 +1,4 @@
-# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
-# https://github.com/P3TERX/Actions-OpenWrt
-# Description: Build OpenWrt using GitHub Actions
-#
-###############改名字##############
-name: Redmi-AX6000-padavanonly
+name: Build OpenWrt Firmware
 
 on:
   repository_dispatch:
@@ -17,8 +8,6 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
-#  schedule:
-#    - cron: 0 16 * * *
 
 env:
   REPO_URL: https://github.com/padavanonly/immortalwrtARM
@@ -31,7 +20,6 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
-  ###############改名字##############
   OPENWRT_NAME: padavanonly
 
 jobs:
@@ -85,7 +73,17 @@ jobs:
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
         ./scripts/feeds install -a
-      
+
+    - name: 替换插件到旧目录
+      run: |
+        cd openwrt
+        # 删除旧插件
+        rm -rf feeds/luci/applications/luci-app-openclash
+        # 移动新插件到旧路径
+        mv feeds/kenzok8/luci-app-openclash feeds/luci/applications/luci-app-openclash
+        # 确保插件安装
+        ./scripts/feeds install luci-app-openclash
+
     - name: 加载config & DIY_P2_SH
       run: |
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
@@ -95,7 +93,7 @@ jobs:
         
     - name: SSH链接管理
       uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh != 'false') || contains(github.event.action, 'ssh')
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
