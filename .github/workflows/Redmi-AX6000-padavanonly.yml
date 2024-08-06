@@ -1,4 +1,4 @@
-name: Build OpenWrt padavanonly
+name: Redmi-AX6000-padavanonly
 
 on:
   repository_dispatch:
