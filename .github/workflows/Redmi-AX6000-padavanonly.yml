@@ -81,8 +81,7 @@ jobs:
         rm -rf feeds/luci/applications/luci-app-openclash
         # 移动新插件到旧路径
         mv feeds/kenzok8/luci-app-openclash feeds/luci/applications/luci-app-openclash
-        # 确保插件安装
-        ./scripts/feeds install luci-app-openclash
+       
 
     - name: 替换 msd_lite 和 luci-app-msd_lite 插件
       run: |
@@ -96,7 +95,7 @@ jobs:
         git clone https://github.com/gyssi007/luci-app-msd_lite.git feeds/luci/applications/luci-app-msd_lite
 
         # 确保插件安装
-        
+        ./scripts/feeds update -a
         ./scripts/feeds install -a
         
         
