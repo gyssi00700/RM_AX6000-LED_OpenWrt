@@ -72,7 +72,7 @@ jobs:
         ./scripts/feeds update -a
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
-        ./scripts/feeds install -a
+        
 
     - name: 替换插件到旧目录
       run: |
@@ -96,7 +96,7 @@ jobs:
         git clone https://github.com/gyssi007/luci-app-msd_lite.git feeds/luci/applications/luci-app-msd_lite
 
         # 确保插件安装
-        ./scripts/feeds update -a
+        
         ./scripts/feeds install -a
         ./scripts/feeds install msd_lite
         ./scripts/feeds install luci-app-msd_lite
