@@ -98,8 +98,7 @@ jobs:
         # 确保插件安装
         
         ./scripts/feeds install -a
-        ./scripts/feeds install msd_lite
-        ./scripts/feeds install luci-app-msd_lite
+        
         
 
     - name: 加载config & DIY_P2_SH
