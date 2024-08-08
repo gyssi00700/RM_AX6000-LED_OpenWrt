@@ -74,15 +74,11 @@ jobs:
         git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
         
 
-    - name: 替换插件到旧目录
+    - name: 删除源码中的Openclash旧文件
       run: |
         cd openwrt
-        # 删除旧插件
         rm -rf feeds/luci/applications/luci-app-openclash
-        # 移动新插件到旧路径
-        mv feeds/kenzok8/luci-app-openclash feeds/luci/applications/luci-app-openclash
-       
-
+        
     - name: 替换 msd_lite 和 luci-app-msd_lite 插件
       run: |
         cd openwrt
@@ -94,11 +90,7 @@ jobs:
         rm -rf feeds/luci/applications/luci-app-msd_lite
         git clone https://github.com/gyssi007/luci-app-msd_lite.git feeds/luci/applications/luci-app-msd_lite
         ./scripts/feeds install -a
-       
         
-        
-        
-
     - name: 加载config & DIY_P2_SH
       run: |
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
