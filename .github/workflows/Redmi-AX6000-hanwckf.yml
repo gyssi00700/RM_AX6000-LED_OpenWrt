@@ -55,6 +55,7 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
+        sudo apt-get install libfuse-dev -y
         
     - name: 下载固件源码
       working-directory: /workdir
@@ -74,7 +75,8 @@ jobs:
       run: |
         cd openwrt
         ./scripts/feeds update -a
-        ./scripts/feeds install -a
+        rm -rf feeds/packages/lang/golang
+        git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
       
     - name: 加载config & DIY_P2_SH
       run: |
