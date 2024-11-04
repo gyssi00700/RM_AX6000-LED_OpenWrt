@@ -103,6 +103,18 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
+    - name: 下载自定义插件
+      run: |
+        cd openwrt
+        # 下载 luci-app-msd_lite 和 luci-i18n-msd_lite-zh-cn 到指定目录
+        mkdir -p package/feeds/luci/applications
+        curl -L -o package/feeds/luci/applications/luci-app-msd_lite.ipk https://mirrors.vsean.net/openwrt/releases/21.02-SNAPSHOT/packages/aarch64_cortex-a53/luci/luci-app-msd_lite_git-23.191.42772-bb3ba1c_all.ipk
+        curl -L -o package/feeds/luci/applications/luci-i18n-msd_lite-zh-cn.ipk https://mirrors.vsean.net/openwrt/releases/21.02-SNAPSHOT/packages/aarch64_cortex-a53/luci/luci-i18n-msd_lite-zh-cn_git-23.191.42772-bb3ba1c_all.ipk
+        
+        # 下载 msd_lite 到指定目录
+        mkdir -p package/feeds/packages/net
+        curl -L -o package/feeds/packages/net/msd_lite.ipk https://mirrors.vsean.net/openwrt/releases/21.02-SNAPSHOT/packages/aarch64_cortex-a53/packages/msd_lite_2023-02-17-744d2ef9-3_aarch64_cortex-a53.ipk
+
     - name: 下载安装包
       id: package
       run: |
@@ -140,24 +152,24 @@ jobs:
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
       
-    - name: 上传固件到github
+    - name: 上传固件到 GitHub
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: ${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}-${{ env.DEVICE_NAME }}
         path: ${{ env.FIRMWARE }}
 
-    - name: 生成release标签
+    - name: 生成 release 标签
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "release_tag=${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}-${{ env.DEVICE_NAME }}" >> $GITHUB_OUTPUT
         touch release.txt
-        echo "由衷感谢所有为openwrt无私奉献的大佬们" >> release.txt
+        echo "由衷感谢所有为 OpenWrt 无私奉献的大佬们" >> release.txt
         echo "📥 固件下载" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
         
-    - name: 发布至release
+    - name: 发布至 release
       uses: softprops/action-gh-release@v1
       if: steps.tag.outputs.status == 'success' && !cancelled()
       env:
@@ -165,5 +177,4 @@ jobs:
       with:
         files: ${{ env.FIRMWARE }}/*
         name: ${{ env.FILE_DATE }}-${{ env.OPENWRT_NAME }}-${{ env.DEVICE_NAME }}
-        tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
